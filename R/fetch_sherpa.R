@@ -13,16 +13,18 @@
 fetch_sherpa <- function(combinedCite, key) {
     box::use(
         dplyr[...],
+        magrittr[`%<>%`],
+        tibble[rownames_to_column, add_case],
         rlist[list.filter, list.select, list.rbind],
         purrr[flatten, map2],
-        tidyr[unnest_longer],
+        tidyr[unnest_longer, unnest, gather],
         parallel[detectCores],
         snow[makeCluster, stopCluster],
         doSNOW[registerDoSNOW],
         foreach[registerDoSEQ, foreach, `%dopar%`],
         fuzzyjoin[stringdist_left_join],
-        utils[URLencode],
-        jsonlite[fromJSON],
+        utils[txtProgressBar, setTxtProgressBar],
+        stringr[str_replace, str_replace_all],
         . / helper[new_bar]
     )
 
@@ -46,6 +48,10 @@ fetch_sherpa <- function(combinedCite, key) {
         }
 
         temp <- foreach(i = 1:count, .options.snow = opts, .errorhandling = "remove") %dopar% {
+            box::use(
+                utils[URLencode],
+                jsonlite[fromJSON]
+            )
             journalArg <- nextJournals[i, ]
             jsonURL <-
                 sprintf(
@@ -158,7 +164,7 @@ fetch_sherpa <- function(combinedCite, key) {
     message("\n* PARSE 1 OF 5 * Finding journals by title\n")
 
     # * Initiate API fetching
-    count <- nrow(journals)
+    count <- nrow(nextJournals)
     pb    <- new_bar(count)
     cl    <- makeCluster(cores, type = "SOCK")
     registerDoSNOW(cl)
@@ -370,7 +376,7 @@ fetch_sherpa <- function(combinedCite, key) {
 
     # ! Look for matches of title
 
-    fuzzydf <- fuzzyjoin::stringdist_left_join(nextJournals, tempdf, by = "Title", distance_col = "Distance", max_dist = 10)
+    fuzzydf <- stringdist_left_join(nextJournals, tempdf, by = "Title", distance_col = "Distance", max_dist = 10)
 
     listA <- fuzzydf$Title.x[!is.na(fuzzydf$Title.x)]
     listB <- fuzzydf$Title.y[!is.na(fuzzydf$Title.y)]
@@ -381,7 +387,7 @@ fetch_sherpa <- function(combinedCite, key) {
         as.data.frame()                                  %>%
         rownames_to_column("id")                         %>%
         tidyr::gather(key = "key", value = "value", -id) %>%
-        dplyr::filter(value == TRUE)
+        filter(value == TRUE)
 
 
     # ! There is definitely a better way to do this but...
@@ -442,6 +448,6 @@ fetch_sherpa <- function(combinedCite, key) {
 #' @export
 get_key <- function() {
     box::use(readr[read_file])
-    key <- read_file("data/api-key.txt")
+    key <- read_file("Data/api-key.txt")
     return(key)
 }

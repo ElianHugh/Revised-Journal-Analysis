@@ -51,6 +51,7 @@ checkmatch <- function(x, y) {
 
 #' @export
 new_bar <- function(count) {
+    box::use(utils[txtProgressBar])
     pb <- txtProgressBar(
         min = 0,
         max = count,

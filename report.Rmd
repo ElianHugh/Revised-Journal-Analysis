@@ -1,0 +1,29 @@
+---
+title: "Journal Analysis"
+author: "Elian H. Thiele-Evans"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+   pdf_document
+---
+
+```{r, include = FALSE}
+# Setup
+box::use(
+    targets[tar_read],
+    knitr[opts_chunk]
+)
+
+opts_chunk$set(
+    fig.width = 12, fig.height = 8, fig.path = "Figs/",
+    echo = FALSE, warning = FALSE, message = FALSE
+)
+```
+
+
+```{r bootGraph}
+tar_read(bootGraph)
+```
+
+```{r citeGraph}
+tar_read(citeRidge)
+```
