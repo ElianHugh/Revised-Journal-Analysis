@@ -14,14 +14,6 @@ graph_citeridge <- function(df) {
     df %<>%
         filter(Top10Perc == TRUE)
 
-    # Comparisons for p-values
-    out <- pairwise.wilcox.test(
-        x = df$OSS, g = df$ScoreGrade,
-        p.adjust.method = "BH", exact = TRUE
-    ) %>%
-        tidy()
-
-
     totalN <- df %>%
         ungroup() %>%
         distinct(Title, .keep_all = TRUE) %>%

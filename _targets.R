@@ -11,7 +11,6 @@ box::use(
         fetch_sherpa_parse3,
         fetch_sherpa_parse4,
         fetch_sherpa_parse5,
-        fetch_sherpa_parse6,
         aggregate_sherpa,
         get_key
     ],
@@ -38,17 +37,15 @@ tar_plan(
     parse2 = fetch_sherpa_parse2(combinedCiteDat, key, parse1),
     parse3 = fetch_sherpa_parse3(combinedCiteDat, key, parse1, parse2),
     parse4 = fetch_sherpa_parse4(combinedCiteDat, key, parse1, parse2, parse3),
-    parse5 = fetch_sherpa_parse5(combinedCiteDat, key, parse1, parse2, parse3, parse4),
-    parse6 = fetch_sherpa_parse6(
+    parse5 = fetch_sherpa_parse5(
         combinedCiteDat,
         key,
         parse1,
         parse2,
         parse3,
-        parse4,
-        parse5,
-    ),
-    fetchedPolicies = aggregate_sherpa(parse1, parse2, parse3, parse4, parse5, parse6),
+        parse4
+        ),
+    fetchedPolicies = aggregate_sherpa(parse1, parse2, parse3, parse4, parse5),
 
     combinedPolicies = combine_journals(combinedCiteDat, fetchedPolicies),
     aggregatedPolicies = aggregate_policies(combinedPolicies),

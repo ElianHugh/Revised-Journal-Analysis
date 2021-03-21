@@ -83,8 +83,8 @@ fetch_sherpa_parse3 <- function(combinedCite, key, parse1, parse2) {
         mutate(
             ISSN = {
                 ISSN %>%
-                    gsub("[[:space:]]", "") %>%
-                    gsub("^(.{4})(.*)$", "\\1-\\2")
+                    gsub("[[:space:]]", "", .) %>%
+                    gsub("^(.{4})(.*)$", "\\1-\\2", .)
             }
         )
     cat("\nISSNs left : ", as.character((nrow(nextJournals))))
@@ -137,10 +137,6 @@ fetch_sherpa_parse5 <- function(combinedCite, key, parse1, parse2, parse3, parse
         ungroup() %>%
         distinct(Publisher, .keep_all = TRUE)
 
-    ##############################
-    #  Parse 5                   #
-    ##############################
-
     message("\n* PARSE 5 OF 6 * Finding journals through publisher matching \n")
 
     # * Initiate API fetching
@@ -169,13 +165,8 @@ fetch_sherpa_parse5 <- function(combinedCite, key, parse1, parse2, parse3, parse
 
     parse5 <- map2(API, seq_along(API), .f = explore_publisher)
     parse5 <- unlist(parse5, use.names = FALSE)
-    cat("\n Journals found: ", length(parse5))
+    cat("\n Publisher journals found: ", length(parse5))
 
-    return(parse5)
-}
-
-#' @export
-fetch_sherpa_parse6 <- function(combinedCite, key, parse1, parse2, parse3, parse4, parse5, nextJournals) {
     tempdf <- as.data.frame(parse5) %>%
         rename(Title = parse5)
     tempdf <- anti_join(tempdf, combinedCite)
@@ -184,7 +175,6 @@ fetch_sherpa_parse6 <- function(combinedCite, key, parse1, parse2, parse3, parse
     if (!is.null(parse2)) tempdf <- anti_join(tempdf, parse2, by = "Title")
     if (!is.null(parse3)) tempdf <- anti_join(tempdf, parse3, by = "Title")
     if (!is.null(parse4)) tempdf <- anti_join(tempdf, parse4, by = "ISSN")
-    if (!is.null(parse5)) tempdf <- anti_join(tempdf, parse5, by = "Title")
 
     # ! Look for matches of title
     fuzzydf <- stringdist_left_join(nextJournals, tempdf, by = "Title", distance_col = "Distance", max_dist = 10)
@@ -217,26 +207,27 @@ fetch_sherpa_parse6 <- function(combinedCite, key, parse1, parse2, parse3, parse
     nextJournals <- matchJournals %>%
         select(id)
 
-    message("\n* PARSE 6 OF 6 * Matching journals \n")
+    message("\n* PARSE 5 OF 5 * Matching journals \n")
     # * Initiate API fetching
     count <- nrow(nextJournals)
     API <- fetch_json(count, nextJournals, key)
 
     if (length(API) > 0) {
         parse6 <- explore_json(API)
+        return(parse6)
+    } else {
+        return(NULL)
     }
 
-    return(parse6)
 }
 
 #' @export
-aggregate_sherpa <- function(parse1, parse2, parse3, parse4, parse5, parse6) {
+aggregate_sherpa <- function(parse1, parse2, parse3, parse4, parse5) {
     combinedPolicies <- parse1
     if (!is.null(parse2)) combinedPolicies <- add_case(combinedPolicies, parse2)
     if (!is.null(parse3)) combinedPolicies <- add_case(combinedPolicies, parse3)
     if (!is.null(parse4)) combinedPolicies <- add_case(combinedPolicies, parse4)
     if (!is.null(parse5)) combinedPolicies <- add_case(combinedPolicies, parse5)
-    if (!is.null(parse6)) combinedPolicies <- add_case(combinedPolicies, parse6)
     combinedPolicies$ISSN <- gsub("-", "", combinedPolicies$ISSN)
     return(combinedPolicies)
 }
