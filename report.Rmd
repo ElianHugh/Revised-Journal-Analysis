@@ -1,6 +1,6 @@
 ---
 title: "Journal Analysis"
-author: "Elian H. Thiele-Evans"
+author: "Elian H. Thiele-Evans, Jennifer L. Beaudry"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
    pdf_document
@@ -19,11 +19,15 @@ opts_chunk$set(
 )
 ```
 
+This is a graph. Amazing!
+
+```{r citeGraph}
+tar_read(citeRidge)
+```
+
+This is a graph, a boot graph to be precise.
 
 ```{r bootGraph}
 tar_read(bootGraph)
 ```
 
-```{r citeGraph}
-tar_read(citeRidge)
-```

@@ -5,7 +5,16 @@ box::use(
     . / R / get_topFactor[get_topFactor],
     . / R / get_citeScore[get_citeScore],
     . / R / analyse_citeScore[analyse_citeScore],
-    . / R / fetch_sherpa[fetch_sherpa, get_key],
+    . / R / fetch_sherpa[
+        fetch_sherpa_parse1,
+        fetch_sherpa_parse2,
+        fetch_sherpa_parse3,
+        fetch_sherpa_parse4,
+        fetch_sherpa_parse5,
+        fetch_sherpa_parse6,
+        aggregate_sherpa,
+        get_key
+    ],
     . / R / combine_journals[combine_journals],
     . / R / aggregate_policies[aggregate_policies],
     . / R / graph_citeridge[graph_citeridge],
@@ -24,7 +33,23 @@ tar_plan(
 
     # Analysis
     combinedCiteDat = analyse_citeScore(topFactorDat, citeScoreDat),
-    fetchedPolicies = fetch_sherpa(combinedCiteDat, key),
+
+    parse1 = fetch_sherpa_parse1(combinedCiteDat, key),
+    parse2 = fetch_sherpa_parse2(combinedCiteDat, key, parse1),
+    parse3 = fetch_sherpa_parse3(combinedCiteDat, key, parse1, parse2),
+    parse4 = fetch_sherpa_parse4(combinedCiteDat, key, parse1, parse2, parse3),
+    parse5 = fetch_sherpa_parse5(combinedCiteDat, key, parse1, parse2, parse3, parse4),
+    parse6 = fetch_sherpa_parse6(
+        combinedCiteDat,
+        key,
+        parse1,
+        parse2,
+        parse3,
+        parse4,
+        parse5,
+    ),
+    fetchedPolicies = aggregate_sherpa(parse1, parse2, parse3, parse4, parse5, parse6),
+
     combinedPolicies = combine_journals(combinedCiteDat, fetchedPolicies),
     aggregatedPolicies = aggregate_policies(combinedPolicies),
     sampleSim = analyse_similarity(aggregatedPolicies, citeScoreDat),

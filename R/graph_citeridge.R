@@ -25,8 +25,8 @@ graph_citeridge <- function(df) {
     totalN <- df %>%
         ungroup() %>%
         distinct(Title, .keep_all = TRUE) %>%
-        count()
-    totalN <- sum(totalN$n)
+        count() %>%
+        sum(.$n)
 
     # * TODO fix this
     df %<>%

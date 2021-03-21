@@ -57,6 +57,9 @@ analyse_citeScore <- function(topFactor, citeScore) {
 
         df <- coalesce_join(df, closestMatches, by = "Title") %>%
             select(Title, MatchTitle, everything()) %>%
+            mutate(MatchTitle = {
+                ifelse(is.na(.$MatchTitle), .$Title, .$MatchTitle)
+            }) %>%
             rowwise() %>%
             mutate(Keep = checkmatch(Title, MatchTitle)) %>%
             filter(Keep == TRUE)
