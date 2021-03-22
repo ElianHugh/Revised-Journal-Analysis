@@ -1,11 +1,12 @@
 #' @export
-graph_similarity <- function(aggregatePolicies, boot.out) {
+graph_similarity_mean <- function(aggregatePolicies, boot.out, boot.stat) {
     box::use(
         dplyr[...],
         ggplot2[...],
         gtools[quantcut],
         papaja[theme_apa],
-        stats[density, quantile]
+        glue[glue],
+        stats[density, quantile, sd]
     )
 
     var <- aggregatePolicies %>%
@@ -14,8 +15,15 @@ graph_similarity <- function(aggregatePolicies, boot.out) {
         select(CiteScore)
 
     jMean <- mean(var$CiteScore)
-    dens <- density(boot.out$Mean)
-    df <- data.frame(x = dens$x, y = dens$y)
+    densMean <- density(boot.out$Mean)
+    lowMean <- boot.stat %>%
+        filter(Statistic == "Mean") %>%
+        pull(Low)
+    highMean <- boot.stat %>%
+        filter(Statistic == "Mean") %>%
+        pull(High)
+
+    df <- data.frame(x = densMean$x, y = densMean$y)
     probs <- c(0, 0.25, 0.5, 0.75, 1)
     quantiles <- quantile(boot.out$Mean, prob = probs)
     loc <- df$y[which(abs(df$x - jMean) == min(abs(df$x - jMean)))]
@@ -37,5 +45,6 @@ graph_similarity <- function(aggregatePolicies, boot.out) {
         xlab("Cite Score Means") +
         ylab("Density") +
         annotate("text", x = jMean + 0.9, y = loc + .05, label = "Journal sample mean", size = 6) +
-        annotate("text", x = 14 + 0.9, y = .4, label = "Iterations = 100,000", size = 6)
+        annotate("text", x = 12 + 0.9, y = .4, label = glue("Bootstrap Mean CI = ({lowMean}, {highMean})"), size = 6) +
+        annotate("text", x = 12 + 0.9, y = .3, label = "Iterations = 100,000", size = 6)
 }

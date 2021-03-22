@@ -19,15 +19,19 @@ opts_chunk$set(
 )
 ```
 
-This is a graph. Amazing!
+As we were interested in how journal prestige aligns with open science practice, we conducted a cross-comparison of journal prestige and open science initiatives. We took the top 10% of journals from Scopus' database (measured through 'CiteScore', Scopus' version of impact factor) in order to examine the distribution of open science practices in "prestigious" journals. We then measured open science initiatives through a combination of TOP factor policies and open access policies (Sherpa/ROMEO). We gave each journal an open science score, which was an aggregation of the total number of open science policies a journal implements. We then categorised the open science scores into quantiles: very low (), low (), medium (), high (), and very high (). Figure 1 displays the distribution of open science policy, compared to CiteScore.
 
-```{r citeGraph}
+
+```{r citeGraph, out.width = '80%'}
 tar_read(citeRidge)
 ```
 
-This is a graph, a boot graph to be precise.
+As per Figure 1, the distribution of CiteScore in comparison to open science policy generally follows a similar pattern, with the exception of the very high group.
 
-```{r bootGraph}
-tar_read(bootGraph)
+We performed bootstrap resampling to compare the similarity of the analysis sample to a random sample from the CiteScore database. Figure 2 displays the distribution of bootstrapped sample means, and where in the distribution the analysis sample mean falls.
+
+```{r bootGraphMean, out.width = '70%'}
+tar_read(bootGraphMean)
 ```
 
+The bootstrap resampling indicates that the journals sampled from the TOP database are, on average, higher in CiteScore than a typical indexed journal.

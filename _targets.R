@@ -1,7 +1,6 @@
 box::use(
     tarchetypes[tar_plan, tar_render],
     here[here],
-    withr[with_options],
     . / R / get_topFactor[get_topFactor],
     . / R / get_citeScore[get_citeScore],
     . / R / analyse_citeScore[analyse_citeScore],
@@ -19,7 +18,7 @@ box::use(
     . / R / graph_citeridge[graph_citeridge],
     . / R / analyse_similarity[analyse_similarity],
     . / R / describe_similarity[describe_similarity],
-    . / R / graph_similarity[graph_similarity]
+    . / R / graph_similarity[graph_similarity_mean]
 )
 
 tar_plan(
@@ -54,7 +53,7 @@ tar_plan(
 
     # # Graphs
     citeRidge = graph_citeridge(aggregatedPolicies),
-    bootGraph = graph_similarity(aggregatedPolicies, sampleSim),
+    bootGraphMean = graph_similarity_mean(aggregatedPolicies, sampleSim, statsBoot),
 
     # # Report
     tar_render(report, "report.Rmd")

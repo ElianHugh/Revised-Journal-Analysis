@@ -11,19 +11,21 @@ analyse_similarity <- function(aggregatePolicies, citeScore) {
     )
 
     bootstrap <- function(x) {
-        out <- sample(x$CiteScore, size = nrow(var2), replace = T)
+        out <- sample(x$CiteScore, size = nrow(analysisSample), replace = T)
         tibble(
             Mean = mean(out),
             SD = sd(out)
         )
     }
 
-    var <- citeScore %>%
+    randomSample <- citeScore %>%
+        ungroup() %>%
         filter(Top10Perc == TRUE) %>%
-        distinct(Title, .keep_all = TRUE) %>%
+        distinct(across(c(Title, ISSN)), .keep_all = TRUE) %>%
         select(CiteScore)
 
-    var2 <- aggregatePolicies %>%
+    analysisSample <- aggregatePolicies %>%
+        ungroup() %>%
         filter(Top10Perc == TRUE) %>%
         distinct(Title, .keep_all = TRUE) %>%
         select(CiteScore)
@@ -44,7 +46,7 @@ analyse_similarity <- function(aggregatePolicies, citeScore) {
         .combine = "rbind",
         .packages = "tidyverse"
     ) %dopar% {
-        x <- bootstrap(var)
+        x <- bootstrap(randomSample)
         return(x)
     }
 
