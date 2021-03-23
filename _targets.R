@@ -52,8 +52,8 @@ tar_plan(
     statsBoot = describe_similarity(sampleSim),
 
     # # Graphs
-    citeRidge = graph_citeridge(aggregatedPolicies),
-    bootGraphMean = graph_similarity_mean(aggregatedPolicies, sampleSim, statsBoot),
+    citeRidge = graph_citeridge(aggregatedPolicies, citeScoreDat),
+    bootGraphMean = graph_similarity_mean(aggregatedPolicies, citeScoreDat, sampleSim, statsBoot),
 
     # # Report
     tar_render(report, "report.Rmd")

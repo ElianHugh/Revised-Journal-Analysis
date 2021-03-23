@@ -1,5 +1,5 @@
 #' @export
-graph_citeridge <- function(df) {
+graph_citeridge <- function(df, citeScoreDat) {
     box::use(
         dplyr[...],
         magrittr[`%<>%`],
@@ -11,8 +11,17 @@ graph_citeridge <- function(df) {
         forcats[fct_reorder]
     )
 
+    # Calculate the top 10 percent of journals from the cite score data
+    # as the Top10Perc column is inaccurate
+    minScore <- citeScoreDat %>%
+        slice_max(CiteScore, n = nrow(.) * 0.1) %>%
+        pull(CiteScore) %>%
+        range() %>%
+        .[1]
+
     df %<>%
-        filter(Top10Perc == TRUE)
+        filter(CiteScore >= minScore)
+        #filter(Top10Perc == TRUE)
 
     totalN <- df %>%
         ungroup() %>%

@@ -18,15 +18,21 @@ analyse_similarity <- function(aggregatePolicies, citeScore) {
         )
     }
 
+    minScore <- citeScore %>%
+        slice_max(CiteScore, n = nrow(.) * 0.1) %>%
+        pull(CiteScore) %>%
+        range() %>%
+        .[1]
+
     randomSample <- citeScore %>%
         ungroup() %>%
-        filter(Top10Perc == TRUE) %>%
+        filter(CiteScore >= minScore) %>%
         distinct(across(c(Title, ISSN)), .keep_all = TRUE) %>%
         select(CiteScore)
 
     analysisSample <- aggregatePolicies %>%
         ungroup() %>%
-        filter(Top10Perc == TRUE) %>%
+        filter(CiteScore >= minScore) %>%
         distinct(Title, .keep_all = TRUE) %>%
         select(CiteScore)
 

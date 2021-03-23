@@ -10,8 +10,8 @@ describe_similarity <- function(boot.out) {
     boot.SE <- sd(boot.out$Mean)
     boot.SD <- mean(boot.out$SD)
     boot.M <- mean(boot.out$Mean)
-    boot.m.CI <- bca(boot.out$Mean, conf.level = 0.95)
-    boot.sd.CI <- bca(boot.out$SD, conf.level = 0.95)
+    boot.m.CI <- bca(boot.out$Mean, conf.level = 0.99)
+    boot.sd.CI <- bca(boot.out$SD, conf.level = 0.99)
 
     boot.table <- tibble(
         Value = round(boot.SD, digits = 2),

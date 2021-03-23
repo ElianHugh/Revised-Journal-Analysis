@@ -1,5 +1,5 @@
 #' @export
-graph_similarity_mean <- function(aggregatePolicies, boot.out, boot.stat) {
+graph_similarity_mean <- function(aggregatePolicies, citeScoreDat, boot.out, boot.stat) {
     box::use(
         dplyr[...],
         ggplot2[...],
@@ -9,8 +9,14 @@ graph_similarity_mean <- function(aggregatePolicies, boot.out, boot.stat) {
         stats[density, quantile, sd]
     )
 
+    minScore <- citeScoreDat %>%
+        slice_max(CiteScore, n = nrow(.) * 0.1) %>%
+        pull(CiteScore) %>%
+        range() %>%
+        .[1]
+
     var <- aggregatePolicies %>%
-        filter(Top10Perc == TRUE) %>%
+        filter(CiteScore >= minScore) %>%
         distinct(Title, .keep_all = TRUE) %>%
         select(CiteScore)
 
