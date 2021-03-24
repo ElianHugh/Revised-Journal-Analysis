@@ -31,17 +31,17 @@ low <- aggregatedPolicies %>%
     filter(ScoreGrade == "Low") %>%
     select(ScoreMin, ScoreMax) %>%
     .[1, ] %>%
-        as.character(.)
+    as.character(.)
 medium <- aggregatedPolicies %>%
     filter(ScoreGrade == "Medium") %>%
     select(ScoreMin, ScoreMax) %>%
     .[1, ] %>%
-        as.character(.)
+    as.character(.)
 high <- aggregatedPolicies %>%
     filter(ScoreGrade == "High") %>%
     select(ScoreMin, ScoreMax) %>%
     .[1, ] %>%
-        as.character(.)
+    as.character(.)
 vhigh <- aggregatedPolicies %>%
     filter(ScoreGrade == "Very High") %>%
     select(ScoreMin, ScoreMax) %>%
@@ -49,24 +49,26 @@ vhigh <- aggregatedPolicies %>%
     as.character(.)
 ```
 
+# Blurb
+
 As we were interested in how journal 'prestige' aligns with open science practice, we conducted a cross-comparison of journal prestige and open science initiatives. We took the top 10% of journals[^1] from Scopus' database (measured through 'CiteScore', Scopus' version of impact factor) in order to examine the distribution of open science practices in "prestigious" journals. We then measured open science initiatives through a combination of TOP factor policies and open access policies (Sherpa/ROMEO). We gave each journal an open science score, which was an aggregation of the total number of open science policies a journal implements. We then categorised the open science scores into quantiles: very low (`r vlow[1]`-`r vlow[2]`), low (`r low[1]`-`r low[2]`), medium (`r medium[1]`-`r medium[2]`), high (`r high[1]`-`r high[2]`), and very high (`r vhigh[1]`-`r vhigh[2]`). Figure 1 displays the distribution of open science policy, compared to CiteScore.
 
-[^1]: Journals outside of the top 10% of CiteScore fall between 0 and 6 CiteScore
+[^1]: 90% of CiteScores fall between 0 and 6
 
-```{r citeGraph, out.width = '80%', fig.cap = "Life expectancy from 1952 - 2007 for Australia. Life expentancy increases steadily except from 1962 to 1969. We can safely say that our life expectancy is higher than it has ever been!"}
+**Figure 1**
+```{r citeGraph, out.width = '80%'}
 tar_read(citeRidge)
 ```
 
-As per Figure 1, the distribution of CiteScore in comparison to open science policy generally follows a similar pattern, with the exception of the very high group.
+As per Figure 1, the distribution of CiteScore is similar across 'very low' to 'high' groups, with the exception being the 'very high' group (*SD* = `r aggregatedPolicies %>% filter(ScoreGrade == "Very High")  %>% pull(CiteScore)  %>% sd() %>% round(., digits = 2)`).
 
 We performed bootstrap resampling to compare the similarity of the analysis sample to a random sample from the CiteScore database. Each bootstrapped sample was of identical size to the analysis sample, and was limited to the top 10% of cite scores. Figure 2 displays the distribution of bootstrapped sample means, and where in the distribution the analysis sample mean falls.
 
-```{r bootGraphMean, out.width = '70%', fig.cap = "Life expectancy from 1952 - 2007 for Australia. Life expentancy increases steadily except from 1962 to 1969. We can safely say that our life expectancy is higher than it has ever been!"}
+**Figure 2**
+```{r bootGraphMean, out.width = '70%'}
 tar_read(bootGraphMean)
 ```
 
 The bootstrap resampling indicates that the journals sampled from the TOP database fall in the 99% CI for journal means, albeit on the higher end of bootstrapped samples.
 
-**What could this mean?**
-
-:O
+# What could this mean?

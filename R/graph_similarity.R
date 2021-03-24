@@ -1,12 +1,13 @@
 #' @export
-graph_similarity_mean <- function(aggregatePolicies, citeScoreDat, boot.out, boot.stat) {
+graph_similarity_mean <- function(aggregatedPolicies, citeScoreDat, sampleSim, statsBoot) {
     box::use(
         dplyr[...],
         ggplot2[...],
         gtools[quantcut],
         papaja[theme_apa],
         glue[glue],
-        stats[density, quantile, sd]
+        stats[density, quantile, sd],
+        tidyr[gather]
     )
 
     minScore <- citeScoreDat %>%
@@ -14,43 +15,43 @@ graph_similarity_mean <- function(aggregatePolicies, citeScoreDat, boot.out, boo
         pull(CiteScore) %>%
         range() %>%
         .[1]
-
-    var <- aggregatePolicies %>%
+    var <- aggregatedPolicies %>%
         filter(CiteScore >= minScore) %>%
         distinct(Title, .keep_all = TRUE) %>%
         select(CiteScore)
-
-    jMean <- mean(var$CiteScore)
-    densMean <- density(boot.out$Mean)
-    lowMean <- boot.stat %>%
+    lowMean <- statsBoot %>%
         filter(Statistic == "Mean") %>%
         pull(Low)
-    highMean <- boot.stat %>%
+    highMean <- statsBoot %>%
         filter(Statistic == "Mean") %>%
         pull(High)
+    jMean <- mean(var$CiteScore)
 
-    df <- data.frame(x = densMean$x, y = densMean$y)
-    probs <- c(0, 0.25, 0.5, 0.75, 1)
-    quantiles <- quantile(boot.out$Mean, prob = probs)
-    loc <- df$y[which(abs(df$x - jMean) == min(abs(df$x - jMean)))]
+    tempGraph <- sampleSim %>%
+        ggplot(aes(Mean, fill = "red")) +
+        geom_density()
 
-    df$quant <- factor(findInterval(df$x, quantiles))
-    ggplot(df, aes(x, y)) +
-        geom_line() +
-        geom_segment(size = 1, color = "red", aes(x = jMean, xend = jMean, y = .04, yend = loc)) +
-        geom_ribbon(aes(ymin = 0, ymax = y, fill = quant)) +
-        scale_fill_brewer(guide = "none") +
+    graphDat <- layer_data(tempGraph, 1) %>%
+        select(x, y, density)
+    sampleLocation <- graphDat$y[
+        which(abs(graphDat$x - jMean) == min(abs(graphDat$x - jMean)))
+    ]
+
+    graph <- tempGraph +
+        geom_segment(size = 1, color = "blue", aes(x = jMean, xend = jMean, y = .00, yend = sampleLocation + .01)) +
         scale_y_continuous(expand = c(0, 0)) +
         theme_apa(base_size = 11) +
         theme(
             text = element_text(size = 20),
             plot.caption = element_text(hjust = 0),
             plot.title.position = "plot",
-            plot.caption.position = "plot"
+            plot.caption.position = "plot",
+            legend.position = "none"
         ) +
         xlab("Cite Score Means") +
         ylab("Density") +
-        annotate("text", x = jMean + 0.9, y = loc + .05, label = "Journal sample mean", size = 6) +
-        annotate("text", x = 12 + 0.9, y = .4, label = glue("Bootstrap Mean CI = ({lowMean}, {highMean})"), size = 6) +
-        annotate("text", x = 12 + 0.9, y = .3, label = "Iterations = 100,000", size = 6)
+        annotate("text", x = 16.5 + 0.9, y = .5, label = glue("Bootstrap Mean CI = ({lowMean}, {highMean})"), size = 6) +
+        annotate("text", x = jMean + 2, y = sampleLocation + .02, label = "Journal sample mean", size = 5)
+
+    return(graph)
 }

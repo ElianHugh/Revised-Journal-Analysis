@@ -63,7 +63,7 @@ fetch_sherpa_parse2 <- function(combinedCite, key, parse1) {
     message("\n* PARSE 2 OF 5 * Finding journals by matchtitle\n")
     # * Initiate API fetching
     count <- length(nextJournals$MatchTitle)
-    API   <- fetch_json(count, nextJournals$MatchTitle, key)
+    API <- fetch_json(count, nextJournals$MatchTitle, key)
 
     if (length(API) > 0) {
         parse2 <- explore_json(API)
@@ -141,7 +141,7 @@ fetch_sherpa_parse5 <- function(combinedCite, key, parse1, parse2, parse3, parse
 
     # * Initiate API fetching
     count <- length(nextPublishers$Publisher)
-    API   <- fetch_json(count, nextPublishers$Publisher, key, is_publisher = TRUE)
+    API <- fetch_json(count, nextPublishers$Publisher, key, is_publisher = TRUE)
     count <- length(API)
 
     # * Prep for explore
@@ -218,16 +218,35 @@ fetch_sherpa_parse5 <- function(combinedCite, key, parse1, parse2, parse3, parse
     } else {
         return(NULL)
     }
-
 }
 
 #' @export
 aggregate_sherpa <- function(parse1, parse2, parse3, parse4, parse5) {
     combinedPolicies <- parse1
-    if (!is.null(parse2)) combinedPolicies <- add_case(combinedPolicies, parse2)
-    if (!is.null(parse3)) combinedPolicies <- add_case(combinedPolicies, parse3)
-    if (!is.null(parse4)) combinedPolicies <- add_case(combinedPolicies, parse4)
-    if (!is.null(parse5)) combinedPolicies <- add_case(combinedPolicies, parse5)
+    if (!is.null(parse2)) {
+        combinedPolicies <- add_case(
+            combinedPolicies, parse2,
+            .name_repair = "minimal"
+        )
+    }
+    if (!is.null(parse3)) {
+        combinedPolicies <- add_case(
+            combinedPolicies, parse3,
+            .name_repair = "minimal"
+        )
+    }
+    if (!is.null(parse4)) {
+        combinedPolicies <- add_case(
+            combinedPolicies, parse4,
+            .name_repair = "minimal"
+        )
+    }
+    if (!is.null(parse5)) {
+        combinedPolicies <- add_case(
+            combinedPolicies, parse5,
+            .name_repair = "minimal"
+        )
+    }
     combinedPolicies$ISSN <- gsub("-", "", combinedPolicies$ISSN)
     return(combinedPolicies)
 }
@@ -294,78 +313,95 @@ fetch_json <- function(count, nextJournals, key, is_issn = FALSE, is_publisher =
 }
 
 explore_json <- function(API) {
-        x <- API                                                          %>%
-            flatten()                                                     %>%
-            list.filter(!is.null(title))                                  %>%
-            list.select(
-                Titles          = flatten(title),
-                ISSNS           = flatten(issns),
-                PublisherPolicy = flatten(publisher_policy))              %>%
-            list.filter(!(is.null(PublisherPolicy$permitted_oa)))         %>%
-            list.select(
-                Title       = Titles$title,
-                ISSN        = ISSNS$issn,
-                PermittedOA = flatten(PublisherPolicy$permitted_oa))      %>%
-            list.select(
-                Title,
-                ISSN,
-                Submitted = "submitted" %in% PermittedOA$article_version,
-                Accepted  = "accepted" %in% PermittedOA$article_version,
-                Published = "published" %in% PermittedOA$article_version) %>%
-            list.rbind()                                                  %>%
-            as_tibble()
+    x <- API %>%
+        flatten() %>%
+        list.filter(!is.null(title)) %>%
+        list.select(
+            Titles = flatten(title),
+            ISSNS = flatten(issns),
+            PublisherPolicy = flatten(publisher_policy)
+        ) %>%
+        list.filter(!(is.null(PublisherPolicy$permitted_oa))) %>%
+        list.select(
+            Title = Titles$title,
+            ISSN = ISSNS$issn,
+            PermittedOA = flatten(PublisherPolicy$permitted_oa)
+        ) %>%
+        list.select(
+            Title,
+            ISSN,
+            Submitted = "submitted" %in% PermittedOA$article_version,
+            Accepted  = "accepted" %in% PermittedOA$article_version,
+            Published = "published" %in% PermittedOA$article_version
+        ) %>%
+        list.rbind() %>%
+        as_tibble(.name_repair = "minimal")
 
-        y <- API                                                 %>%
-            flatten()                                            %>%
-            list.filter(!is.null(title))                         %>%
-            list.select(
-                Titles          = flatten(title),
-                ISSNS           = flatten(issns),
-                PublisherPolicy = flatten(publisher_policy))     %>%
-            list.filter((is.null(PublisherPolicy$permitted_oa))) %>%
-            list.select(
-                Title     = Titles$title,
-                ISSN      = ISSNS$issn,
-                Submitted = FALSE,
-                Accepted  = FALSE,
-                Published = FALSE)                               %>%
-            list.rbind()                                         %>%
-            as_tibble()
+    y <- API %>%
+        flatten() %>%
+        list.filter(!is.null(title)) %>%
+        list.select(
+            Titles = flatten(title),
+            ISSNS = flatten(issns),
+            PublisherPolicy = flatten(publisher_policy)
+        ) %>%
+        list.filter((is.null(PublisherPolicy$permitted_oa))) %>%
+        list.select(
+            Title = Titles$title,
+            ISSN = ISSNS$issn,
+            Submitted = FALSE,
+            Accepted = FALSE,
+            Published = FALSE
+        ) %>%
+        list.rbind() %>%
+        as_tibble(.name_repair = "minimal")
 
-        if (nrow(x) > 0 && nrow(y) > 0) {
-            z <- full_join(x, y)         %>%
-                unnest_longer(Title)     %>%
-                unnest_longer(ISSN)      %>%
-                unnest_longer(Submitted) %>%
-                unnest_longer(Accepted)  %>%
-                unnest_longer(Published)
-        } else if (!nrow(x) > 0) {
-            z <- y                       %>%
-                unnest_longer(Title)     %>%
-                unnest_longer(ISSN)      %>%
-                unnest_longer(Submitted) %>%
-                unnest_longer(Accepted)  %>%
-                unnest_longer(Published)
-        } else {
-            z <- x                       %>%
-                unnest_longer(Title)     %>%
-                unnest_longer(ISSN)      %>%
-                unnest_longer(Submitted) %>%
-                unnest_longer(Accepted)  %>%
-                unnest_longer(Published)
-        }
-        return(z)
+    if (nrow(x) > 0 && nrow(y) > 0) {
+        z <- full_join(x, y) %>%
+            unnest_longer(Title) %>%
+            unnest_longer(ISSN) %>%
+            unnest_longer(Submitted) %>%
+            unnest_longer(Accepted) %>%
+            unnest_longer(Published)
+    } else if (!nrow(x) > 0) {
+        z <- y %>%
+            unnest_longer(Title) %>%
+            unnest_longer(ISSN) %>%
+            unnest_longer(Submitted) %>%
+            unnest_longer(Accepted) %>%
+            unnest_longer(Published)
+    } else {
+        z <- x %>%
+            unnest_longer(Title) %>%
+            unnest_longer(ISSN) %>%
+            unnest_longer(Submitted) %>%
+            unnest_longer(Accepted) %>%
+            unnest_longer(Published)
     }
+    return(z)
+}
 
 get_leftover_journals <- function(combinedCite, parse1 = NULL, parse2 = NULL, parse3 = NULL, parse4 = NULL, parse5 = NULL, parse6 = NULL) {
     box::use(dplyr[...])
     leftover <- combinedCite %>%
-        { if (!is.null(parse1)) anti_join(., parse1, by = "Title") else . } %>%
-        { if (!is.null(parse2)) anti_join(., parse2, by = c("MatchTitle" = "Title")) else . } %>%
-        { if (!is.null(parse3)) anti_join(., parse3, by = "Title") else . } %>%
-        { if (!is.null(parse4)) anti_join(., parse4, by = "ISSN") else . } %>%
-        { if (!is.null(parse5)) anti_join(., parse5, by = "Title") else . } %>%
-        { if (!is.null(parse6)) anti_join(., parse6, by = "Title") else . }
+        {
+            if (!is.null(parse1)) anti_join(., parse1, by = "Title") else .
+        } %>%
+        {
+            if (!is.null(parse2)) anti_join(., parse2, by = c("MatchTitle" = "Title")) else .
+        } %>%
+        {
+            if (!is.null(parse3)) anti_join(., parse3, by = "Title") else .
+        } %>%
+        {
+            if (!is.null(parse4)) anti_join(., parse4, by = "ISSN") else .
+        } %>%
+        {
+            if (!is.null(parse5)) anti_join(., parse5, by = "Title") else .
+        } %>%
+        {
+            if (!is.null(parse6)) anti_join(., parse6, by = "Title") else .
+        }
 
     cat("\nJournals left : ", as.character((nrow(leftover))))
     return(leftover)
