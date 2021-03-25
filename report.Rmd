@@ -2,6 +2,9 @@
 title: "Journal Analysis"
 author: "Elian H. Thiele-Evans, Jennifer L. Beaudry"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
+header-includes:
+   - \usepackage{setspace}
+   - \doublespacing
 output:
    pdf_document
 ---
@@ -49,9 +52,7 @@ vhigh <- aggregatedPolicies %>%
     as.character(.)
 ```
 
-# Blurb
-
-As we were interested in how journal 'prestige' aligns with open science practice, we conducted a cross-comparison of journal prestige and open science initiatives. We took the top 10% of journals[^1] from Scopus' database (measured through 'CiteScore', Scopus' version of impact factor) in order to examine the distribution of open science practices in "prestigious" journals. We then measured open science initiatives through a combination of TOP factor policies and open access policies (Sherpa/ROMEO). We gave each journal an open science score, which was an aggregation of the total number of open science policies a journal implements. We then categorised the open science scores into quantiles: very low (`r vlow[1]`-`r vlow[2]`), low (`r low[1]`-`r low[2]`), medium (`r medium[1]`-`r medium[2]`), high (`r high[1]`-`r high[2]`), and very high (`r vhigh[1]`-`r vhigh[2]`). Figure 1 displays the distribution of open science policy, compared to CiteScore.
+As we were interested in how journal 'prestige' aligns with open science policy, we conducted a cross-comparison of journal prestige and open science initiatives. We took the top 10% of journals[^1] from Scopus' database (measured through 'CiteScore', Scopus' version of impact factor) in order to examine the distribution of open science practices in "prestigious" journals. We then measured open science initiatives through a combination of open science (TOP factor) and open access policies (Sherpa/ROMEO). We gave each journal an open science score, which was an aggregation of the total number of open science policies a journal implements. We then categorised the open science scores into quantiles: very low (`r vlow[1]`-`r vlow[2]`), low (`r low[1]`-`r low[2]`), medium (`r medium[1]`-`r medium[2]`), high (`r high[1]`-`r high[2]`), and very high (`r vhigh[1]`-`r vhigh[2]`). Figure 1 displays the distribution of open science policy, compared to CiteScore.
 
 [^1]: 90% of CiteScores fall between 0 and 6
 
@@ -60,7 +61,7 @@ As we were interested in how journal 'prestige' aligns with open science practic
 tar_read(citeRidge)
 ```
 
-As per Figure 1, the distribution of CiteScore is similar across 'very low' to 'high' groups, with the exception being the 'very high' group (*SD* = `r aggregatedPolicies %>% filter(ScoreGrade == "Very High")  %>% pull(CiteScore)  %>% sd() %>% round(., digits = 2)`).
+As per Figure 1, the distribution of CiteScore is similar across 'very low' to 'high' groups, with the exception being the 'very high' group (*SD* = `r aggregatedPolicies %>% filter(ScoreGrade == "Very High")  %>% pull(CiteScore)  %>% sd() %>% round(., digits = 2)`). It is conceivable that, in light of high-profile replication failures, higher impact journals have begun to adopt open science policy in some form, explaining the larger standard deviation of the 'very high' group.
 
 We performed bootstrap resampling to compare the similarity of the analysis sample to a random sample from the CiteScore database. Each bootstrapped sample was of identical size to the analysis sample, and was limited to the top 10% of cite scores. Figure 2 displays the distribution of bootstrapped sample means, and where in the distribution the analysis sample mean falls.
 
@@ -71,4 +72,6 @@ tar_read(bootGraphMean)
 
 The bootstrap resampling indicates that the journals sampled from the TOP database fall in the 99% CI for journal means, albeit on the higher end of bootstrapped samples.
 
-# What could this mean?
+# Future
+
+As the TOP database is expanded, the analysis conducted can be expanded to include more journals. Moreover, the level of policy implementation could be a future project, as the current work did not have the ability to differentiate and assess whether journals were adopting a broad range of low or high level policies.
