@@ -50,8 +50,8 @@ graph_similarity_mean <- function(aggregatedPolicies, citeScoreDat, sampleSim, s
         ) +
         xlab("Cite Score Means") +
         ylab("Density") +
-        annotate("text", x = 16.5 + 0.9, y = .5, label = glue("Bootstrap Mean CI = ({lowMean}, {highMean})"), size = 6) +
-        annotate("text", x = jMean + 2, y = sampleLocation + .02, label = "Journal sample mean", size = 5)
+        annotate("text", x = 16.5 + 0.9, y = .4, label = glue("Iterations = 100000 \nBootstrap Mean CI = ({lowMean}, {highMean})"), size = 7) +
+        annotate("text", x = jMean + 1.5, y = sampleLocation + .02, label = "Journal sample mean", size = 7)
 
     return(graph)
 }
