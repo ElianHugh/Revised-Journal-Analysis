@@ -1,35 +1,34 @@
 #' @export
-combine_journals <- function(combinedCite, journalPolicies) {
+combine_journals <- function(combined_cite, journal_policies) {
     box::use(
         dplyr[...],
-        magrittr[`%<>%`],
+        enumr[enum],
         . / helper[coalesce_join]
     )
 
-    combinedRow <- combinedCite %>%
-        ungroup() %>%
-        distinct(Title) %>%
-        tally()
-    journalRow <- journalPolicies %>%
-        distinct(Title) %>%
-        tally()
+    journal <- enum(
+        hasPolicy = 1,
+        noPolicy = 0,
+        unknown = 999
+    )
 
-    message("Number of unique journals found in combinedCite: ", combinedRow)
-    message("Number of unique journals found in journalPolicies: ", journalRow)
-    journalPolicies %<>%
+    journal_policies <- journal_policies %>%
         select(-ISSN) %>%
         distinct(Title, .keep_all = TRUE) %>%
-        mutate_at(vars(Submitted:Published), ~ case_when(
-            . == TRUE ~ 1,
-            . == FALSE ~ 0,
-            is.na(.) ~ 999,
-            TRUE ~ 999
-        ))
+        mutate_at(
+            vars(Submitted:Published),
+            ~ case_when(
+                . == TRUE ~ journal$hasPolicy,
+                . == FALSE ~ journal$noPolicy,
+                is.na(.) ~ journal$unknown,
+                TRUE ~ journal$unknown
+            )
+        )
 
-    x <- combinedCite %>%
+    x <- combined_cite %>%
         ungroup()
 
-    df <- left_join(x, journalPolicies)
+    df <- left_join(x, journal_policies)
     y <- df[is.na(df$Submitted), ] %>%
         select(
             Title,
@@ -49,9 +48,9 @@ combine_journals <- function(combinedCite, journalPolicies) {
             Badges
         )
 
-    journalPolicies %<>%
+    journal_policies <- journal_policies %>%
         rename(MatchTitle = Title)
-    df2 <- left_join(y, journalPolicies, by = "MatchTitle")
+    df2 <- left_join(y, journal_policies, by = "MatchTitle")
     df <- coalesce_join(df, df2, by = "Title")
     leftover <- df[is.na(df$Submitted), ]
     df <- anti_join(df, leftover, by = "Title")

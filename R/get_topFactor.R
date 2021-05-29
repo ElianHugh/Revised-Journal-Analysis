@@ -4,7 +4,6 @@
 get_topFactor <- function() {
     box::use(
         readr[read_csv, cols, col_skip],
-        magrittr[`%<>%`],
         dplyr[rename, mutate, `%>%`, all_vars]
     )
 
@@ -27,7 +26,7 @@ get_topFactor <- function() {
         trim_ws = TRUE
     )
 
-    dat %<>%
+    dat <- dat %>%
         rename(
             Title = Journal,
             DataTransparency = `Data transparency score`,

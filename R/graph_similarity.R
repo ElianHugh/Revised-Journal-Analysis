@@ -3,11 +3,10 @@ graph_similarity_mean <- function(aggregatedPolicies, citeScoreDat, sampleSim, s
     box::use(
         dplyr[...],
         ggplot2[...],
-        gtools[quantcut],
-        papaja[theme_apa],
         glue[glue],
         stats[density, quantile, sd],
-        tidyr[gather]
+        tidyr[gather],
+        . / burgled[quantcut]
     )
 
     minScore <- citeScoreDat %>%
@@ -40,7 +39,7 @@ graph_similarity_mean <- function(aggregatedPolicies, citeScoreDat, sampleSim, s
     graph <- tempGraph +
         geom_segment(size = 1, color = "blue", aes(x = jMean, xend = jMean, y = .00, yend = sampleLocation + .01)) +
         scale_y_continuous(expand = c(0, 0)) +
-        theme_apa(base_size = 11) +
+        theme_minimal(base_size = 11) +
         theme(
             text = element_text(size = 20),
             plot.caption = element_text(hjust = 0),

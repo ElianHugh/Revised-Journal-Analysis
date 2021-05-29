@@ -12,7 +12,6 @@
 
 box::use(
     dplyr[...],
-    magrittr[`%<>%`],
     tibble[rownames_to_column, add_case],
     rlist[list.filter, list.select, list.rbind],
     purrr[flatten, map2],
@@ -24,6 +23,7 @@ box::use(
     fuzzyjoin[stringdist_left_join],
     utils[txtProgressBar, setTxtProgressBar],
     stringr[str_replace, str_replace_all],
+    enumr[enum],
     . / helper[new_bar]
 )
 
@@ -184,7 +184,7 @@ fetch_sherpa_parse5 <- function(combinedCite, key, parse1, parse2, parse3, parse
 
     matchJournals <- sapply(listA, function(y) sapply(listB, function(x) grepl(y, x)))
 
-    matchJournals %<>%
+    matchJournals <- matchJournals %>%
         as.data.frame() %>%
         rownames_to_column("id") %>%
         gather(key = "key", value = "value", -id) %>%
@@ -199,7 +199,7 @@ fetch_sherpa_parse5 <- function(combinedCite, key, parse1, parse2, parse3, parse
     matchJournals$key <- trimws(matchJournals$key, which = "both")
 
 
-    matchJournals %<>%
+    matchJournals <- matchJournals %>%
         distinct()
 
     cat("\nJournals matched: ", nrow(matchJournals))
@@ -269,12 +269,19 @@ get_key <- function() {
 #' @examples
 #' out <- fetch_json(opts, count, nextJournals, key)
 fetch_json <- function(count, nextJournals, key, is_issn = FALSE, is_publisher = FALSE) {
+
+    urls <- enum(
+        issn = 'https://v2.sherpa.ac.uk/cgi/retrieve?item-type=publication&api-key=%s&format=Json&filter=[["issn","equals","%s"]]',
+        publisher = 'https://v2.sherpa.ac.uk/cgi/retrieve?item-type=publisher&api-key=%s&format=Json&filter=[["name","equals","%s"]]',
+        journal = 'https://v2.sherpa.ac.uk/cgi/retrieve?item-type=publication&api-key=%s&format=Json&filter=[["title","equals","%s"]]'
+    )
+
     if (is_issn == TRUE) {
-        urlArg <- 'https://v2.sherpa.ac.uk/cgi/retrieve?item-type=publication&api-key=%s&format=Json&filter=[["issn","equals","%s"]]'
+        urlArg <- urls$issn
     } else if (is_publisher == TRUE) {
-        urlArg <- 'https://v2.sherpa.ac.uk/cgi/retrieve?item-type=publisher&api-key=%s&format=Json&filter=[["name","equals","%s"]]'
+        urlArg <- urls$publisher
     } else {
-        urlArg <- 'https://v2.sherpa.ac.uk/cgi/retrieve?item-type=publication&api-key=%s&format=Json&filter=[["title","equals","%s"]]'
+        urlArg <- urls$journal
     }
 
     opts <- list(progress = (function(n) setTxtProgressBar(pb, n)))

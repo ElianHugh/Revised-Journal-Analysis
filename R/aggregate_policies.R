@@ -5,14 +5,15 @@
 aggregate_policies <- function(df) {
     box::use(
         dplyr[...],
-        magrittr[`%<>%`],
-        gtools[quantcut]
+        . / burgled[quantcut]
     )
+
     df$OSS <- df %>%
         select(DataCitation:Badges, Submitted, Accepted, Published) %>%
         rowSums(na.rm = TRUE)
 
-    df %<>% mutate(
+    df <- df %>%
+     mutate(
         ScoreGrade = quantcut(df$OSS, q = 5)
     ) %>%
         group_by(ScoreGrade) %>%
@@ -30,7 +31,7 @@ aggregate_policies <- function(df) {
 
     df$Title <- coalesce(df$MatchTitle, df$Title)
 
-    df %<>%
+    df <- df %>%
         distinct(Title, .keep_all = TRUE) %>%
         select(
             -DataCitation:-Badges,

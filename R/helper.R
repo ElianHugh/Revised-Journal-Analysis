@@ -20,10 +20,13 @@ coalesce_join <- function(x, y,
         nchar(to_coalesce) - nchar(suffix_used)
     ))
 
-    coalesced <- map_dfc(to_coalesce, ~ coalesce(
-        joined[[paste0(.x, suffix[1])]],
-        joined[[paste0(.x, suffix[2])]]
-    ))
+    coalesced <- map_dfc(
+        to_coalesce,
+        ~ coalesce(
+            joined[[paste0(.x, suffix[1])]],
+            joined[[paste0(.x, suffix[2])]]
+        )
+    )
     names(coalesced) <- to_coalesce
 
     bind_cols(joined, coalesced)[cols]
@@ -34,24 +37,26 @@ coalesce_join <- function(x, y,
 #' @export
 checkmatch <- function(x, y) {
     box::use(stringr[str_detect])
+
     if (is.na(y)) {
         return(TRUE)
     } else {
-    if ((str_detect(x, "\\s")) && (str_detect(y, "\\s"))) {
-        return(TRUE)
-    } else {
-        if (!(str_detect(x, "\\s")) && !(str_detect(y, "\\s"))) {
-            return(FALSE)
-        } else {
+        if ((str_detect(x, "\\s")) && (str_detect(y, "\\s"))) {
             return(TRUE)
+        } else {
+            if (!(str_detect(x, "\\s")) && !(str_detect(y, "\\s"))) {
+                return(FALSE)
+            } else {
+                return(TRUE)
+            }
         }
-    }
     }
 }
 
 #' @export
 new_bar <- function(count) {
     box::use(utils[txtProgressBar])
+
     pb <- txtProgressBar(
         min = 0,
         max = count,

@@ -11,7 +11,7 @@ analyse_similarity <- function(aggregatePolicies, citeScore) {
     )
 
     bootstrap <- function(x) {
-        out <- sample(x$CiteScore, size = nrow(analysisSample), replace = T)
+        out <- sample(x$CiteScore, size = nrow(analysisSample), replace = TRUE)
         tibble(
             Mean = mean(out),
             SD = sd(out)

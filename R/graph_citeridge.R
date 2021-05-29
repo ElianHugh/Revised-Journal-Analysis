@@ -2,9 +2,7 @@
 graph_citeridge <- function(df, citeScoreDat) {
     box::use(
         dplyr[...],
-        magrittr[`%<>%`],
         ggridges[stat_density_ridges, theme_ridges],
-        papaja[theme_apa],
         ggplot2[...],
         broom[tidy],
         stats[pairwise.wilcox.test],
@@ -19,9 +17,8 @@ graph_citeridge <- function(df, citeScoreDat) {
         range() %>%
         .[1]
 
-    df %<>%
+    df <- df %>%
         filter(CiteScore >= minScore)
-        #filter(Top10Perc == TRUE)
 
     totalN <- df %>%
         ungroup() %>%
@@ -30,7 +27,7 @@ graph_citeridge <- function(df, citeScoreDat) {
         sum(.$n)
 
     # * TODO fix this
-    df %<>%
+    df <- df %>%
         group_by(ScoreGrade) %>%
         mutate(N = paste0(ScoreGrade, "\n(n = ", n(), ")"))
 
@@ -63,7 +60,7 @@ graph_citeridge <- function(df, citeScoreDat) {
         scale_x_continuous(expand = c(0, 0)) +
         scale_y_discrete(expand = c(0, 0)) +
         theme_ridges(grid = FALSE, center_axis_labels = TRUE) +
-        theme_apa() +
+        theme_minimal() +
         ylab("Open Science Policy") +
         scale_fill_manual(values = pal) +
         theme(

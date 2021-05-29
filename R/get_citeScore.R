@@ -2,7 +2,6 @@
 get_citeScore <- function() {
     box::use(
         readr[read_csv, col_skip, cols],
-        magrittr[`%<>%`],
         dplyr[mutate, rename, `%>%`],
         tidyr[pivot_longer, drop_na],
         withr[with_options],
@@ -28,7 +27,7 @@ get_citeScore <- function() {
         )
     )
 
-    dat %<>%
+    dat <- dat %>%
         pivot_longer(
             c(`Print ISSN`, `E-ISSN`),
             names_repair = "unique"
