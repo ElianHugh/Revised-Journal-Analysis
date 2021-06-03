@@ -7,9 +7,9 @@ combine_journals <- function(combined_cite, journal_policies) {
     )
 
     journal <- enum(
-        hasPolicy = 1,
-        noPolicy = 0,
-        unknown = 999
+        hasPolicies = 1L,
+        noPolicies = 0L,
+        unknown = 999L
     )
 
     journal_policies <- journal_policies %>%
@@ -18,8 +18,8 @@ combine_journals <- function(combined_cite, journal_policies) {
         mutate_at(
             vars(Submitted:Published),
             ~ case_when(
-                . == TRUE ~ journal$hasPolicy,
-                . == FALSE ~ journal$noPolicy,
+                . == TRUE ~ journal$hasPolicies,
+                . == FALSE ~ journal$noPolicies,
                 is.na(.) ~ journal$unknown,
                 TRUE ~ journal$unknown
             )

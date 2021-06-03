@@ -38,7 +38,6 @@ aggregate_policies <- function(df) {
             -Submitted:-Published,
             -MatchTitle,
             -SubjectArea,
-            -Discipline,
             -Publisher,
             -ISSN
         )

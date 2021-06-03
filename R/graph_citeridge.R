@@ -6,7 +6,8 @@ graph_citeridge <- function(df, citeScoreDat) {
         ggplot2[...],
         broom[tidy],
         stats[pairwise.wilcox.test],
-        forcats[fct_reorder]
+        forcats[fct_reorder],
+        ./burgled[theme_apa]
     )
 
     # Calculate the top 10 percent of journals from the cite score data
@@ -60,7 +61,7 @@ graph_citeridge <- function(df, citeScoreDat) {
         scale_x_continuous(expand = c(0, 0)) +
         scale_y_discrete(expand = c(0, 0)) +
         theme_ridges(grid = FALSE, center_axis_labels = TRUE) +
-        theme_minimal() +
+        theme_apa() +
         ylab("Open Science Policy") +
         scale_fill_manual(values = pal) +
         theme(
