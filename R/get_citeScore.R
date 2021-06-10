@@ -8,7 +8,7 @@ get_citeScore <- function() {
         stringr[str_pad]
     )
 
-    dat <- read_csv("Data/CiteScore.csv",
+    citeScoreDat <- read_csv("Data/CiteScore.csv",
         col_types = cols(
             `Scopus Source ID` = col_skip(),
             `Scholarly Output` = col_skip(),
@@ -27,14 +27,15 @@ get_citeScore <- function() {
         )
     )
 
-    dat <- dat %>%
+    citeScoreDat <- citeScoreDat %>%
         pivot_longer(
             c(`Print ISSN`, `E-ISSN`),
             names_repair = "unique"
         ) %>%
         rename(
             ISSN = value,
-            Top10Perc = `Top 10% (CiteScore Percentile)`
+            Top10Perc = `Top 10% (CiteScore Percentile)`,
+            CiteScore = `CiteScore 2020`
         ) %>%
         mutate(
             name = NULL,
@@ -45,5 +46,5 @@ get_citeScore <- function() {
         ) %>%
             drop_na(ISSN)
 
-    return(dat)
+    return(citeScoreDat)
 }
