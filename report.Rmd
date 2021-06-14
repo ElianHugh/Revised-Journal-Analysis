@@ -15,7 +15,8 @@ box::use(
     targets[tar_read, tar_load],
     knitr[opts_chunk],
     dplyr[...],
-    readr[read_csv, col_skip, cols]
+    readr[read_csv, col_skip, cols],
+    topapi
 )
 
 opts_chunk$set(
@@ -25,7 +26,6 @@ opts_chunk$set(
 ```
 
 ```{r sampleData, include = FALSE}
-tar_load(citeScoreDat)
 orig_cite_n <- read_csv("Data/CiteScore.csv",
     col_types = cols(
         `Scopus Source ID` = col_skip(),
@@ -46,66 +46,54 @@ orig_cite_n <- read_csv("Data/CiteScore.csv",
 ) %>%
     nrow(.)
 
-orig_top_n <- read_csv("Data/top-factor.csv",
-    col_types = cols(
-        `Analysis code transparency justification`             = col_skip(),
-        `Analysis plan preregistration justification`          = col_skip(),
-        `Author guideline url`                                 = col_skip(),
-        `Design & analysis reporting guidelines justification` = col_skip(),
-        `Registered reports & publication bias justification`  = col_skip(),
-        `Data citation justification`                          = col_skip(),
-        `Data transparency justification`                      = col_skip(),
-        `Materials transparency justification`                 = col_skip(),
-        `Open science badges justification`                    = col_skip(),
-        `Replication justification`                            = col_skip(),
-        Society                                                = col_skip(),
-        `Study preregistration justification`                  = col_skip(),
-        Total                                                  = col_skip()
-    ),
-    trim_ws = TRUE
-) %>%
+orig_top_n <- topapi$full_data() %>%
     nrow(.)
 
 ```
 
 ```{r quantileData, include = FALSE}
-tar_load(aggregatedPolicies)
+tar_load(aggregated_policies)
+tar_load(cite_score_dat)
 
-minScore <- citeScoreDat %>%
+min_score <- cite_score_dat %>%
     slice_max(CiteScore, n = nrow(.) * 0.1) %>%
     pull(CiteScore) %>%
     range() %>%
     .[1]
 
-top10Cite <- citeScoreDat %>%
-    filter(CiteScore >= minScore)
+top10_cite <- cite_score_dat %>%
+    filter(CiteScore >= min_score)
 
-totalSample <- aggregatedPolicies %>%
+total_sample <- aggregated_policies %>%
     ungroup() %>%
-    filter(CiteScore >= minScore) %>%
+    filter(CiteScore >= min_score) %>%
     nrow()
 
-vlow <- aggregatedPolicies %>%
+vlow <- aggregated_policies %>%
     filter(ScoreGrade == "Very Low") %>%
     select(ScoreMin, ScoreMax) %>%
     .[1, ] %>%
     as.character(.)
-low <- aggregatedPolicies %>%
+
+low <- aggregated_policies %>%
     filter(ScoreGrade == "Low") %>%
     select(ScoreMin, ScoreMax) %>%
     .[1, ] %>%
     as.character(.)
-medium <- aggregatedPolicies %>%
+
+medium <- aggregated_policies %>%
     filter(ScoreGrade == "Medium") %>%
     select(ScoreMin, ScoreMax) %>%
     .[1, ] %>%
     as.character(.)
-high <- aggregatedPolicies %>%
+
+high <- aggregated_policies %>%
     filter(ScoreGrade == "High") %>%
     select(ScoreMin, ScoreMax) %>%
     .[1, ] %>%
     as.character(.)
-vhigh <- aggregatedPolicies %>%
+
+vhigh <- aggregated_policies %>%
     filter(ScoreGrade == "Very High") %>%
     select(ScoreMin, ScoreMax) %>%
     .[1, ] %>%
@@ -125,41 +113,47 @@ show_range <- function(low, high) {
 }
 ```
 
-As we were interested in how journal "prestige" aligns with open science policy, we conducted a cross-comparison of journal prestige and open science initiatives. We took the top 10% of journals[^1] from a Scopus database (*SD* = `r round(sd(top10Cite$CiteScore))`; *n* = `r nrow(top10Cite)`; measured through "CiteScore", Scopus' version of impact factor) in order to examine the distribution of open science practices in "prestigious" journals. We then measured open science initiatives through a combination of open science (TOP factor) and open access policies (Sherpa/ROMEO). We gave each journal an open science policy score, which was an aggregation of the **total** number of open science policies a journal adopts (*not* the level of policy). We then categorised the open science policy scores into quintiles: very low (`r show_range(vlow[1], vlow[2])`), low (`r show_range(low[1], low[2])`), medium (`r show_range(medium[1], medium[2])`), high (`r show_range(high[1], high[2])`), and very high (`r show_range(vhigh[1], vhigh[2])`). We reached the final journal sample (*n* = `r totalSample`) by performing the following:
+As we were interested in how journal "prestige" aligns with open science policy, we conducted a cross-comparison of journal prestige and open science initiatives. We took the top 10% of journals[^1] from a Scopus database (*SD* = `r round(sd(top10_cite$CiteScore))`; *n* = `r nrow(top10_cite)`; measured through "CiteScore", Scopus' version of impact factor) in order to examine the distribution of open science practices in "prestigious" journals. We then measured open science initiatives through a combination of open science (TOP factor) and open access policies (Sherpa/ROMEO). We gave each journal an open science policy score, which was an aggregation of the **total** number of open science policies a journal adopts (*not* the level of policy). We then categorised the open science policy scores into quintiles: very low (`r show_range(vlow[1], vlow[2])`), low (`r show_range(low[1], low[2])`), medium (`r show_range(medium[1], medium[2])`), high (`r show_range(high[1], high[2])`), and very high (`r show_range(vhigh[1], vhigh[2])`). We reached the final journal sample (*n* = `r total_sample`) by performing the following:
 
 [^1]: The other 90% of CiteScores in the database fall between 0 and 6; *N* = `r orig_cite_n`
 
-1. Retrieve CiteScore (*N* = `r orig_cite_n`) and TOP Factor (*N* = `r orig_top_n`) CSV files
+1. Retrieve CiteScore (*N* = `r orig_cite_n`) and TOP Factor (*N* = `r orig_top_n`) data files[^2]
 3. Filter the journals to those in the top 10% of CiteScores on Scopus
 2. Remove journals from TOP that do not have an associated CiteScores on the modified CiteScore file
 4. Retrieve SHERPA/RoMEO policies through their API, removing journals that did not have any OA policies listed
+
+[^2]: A helper R package was created for the handling of the TOP dataset [topapi](https://github.com/ElianHugh/topapi)
 
 Figure 1 displays the distribution of open science policy score, compared to CiteScore.
 
 \newpage
 
-**Figure 1**
+## Figure 1
+
 ```{r citeGraph, out.width = "80%"}
-tar_read(citeRidge)
-otherSD <- aggregatedPolicies %>%
+tar_read(cite_ridge)
+```
+
+```{r}
+other_sd <- aggregated_policies %>%
     filter(ScoreGrade != "Very High") %>%
     group_by(ScoreGrade) %>%
     summarise(StnD = sd(CiteScore)) %>%
     pull(StnD) %>%
     round(., digits = 2)
-vHighSD <- aggregatedPolicies %>%
+v_high_sd <- aggregated_policies %>%
     filter(ScoreGrade == "Very High") %>%
     pull(CiteScore) %>%
     sd() %>%
     round(., digits = 2)
 ```
 
-As per Figure 1, the journals in the very high group show considerable varation in their CiteScores (*SD* = `r vHighSD`). The journals of all other categories of open science policy scores show similar distirubtions to eachother (*SD* = `r min(otherSD)` - `r max(otherSD)`). It is conceivable that, in light of high-profile replication failures, higher impact journals have begun to adopt open science policy in some form, explaining the larger standard deviation of the "very high" group.
+As per Figure 1, the journals in the very high group show considerable varation in their CiteScores (*SD* = `r v_high_sd`). The journals of all other categories of open science policy scores show similar distirubtions to eachother (*SD* = `r min(other_sd)` - `r max(other_sd)`). It is conceivable that, in light of high-profile replication failures, higher impact journals have begun to adopt open science policy in some form, explaining the larger standard deviation of the "very high" group.
 
 ```{r}
-bootSize <- aggregatedPolicies %>%
+bootSize <- aggregated_policies %>%
     ungroup() %>%
-    filter(CiteScore >= minScore) %>%
+    filter(CiteScore >= min_score) %>%
     distinct(Title, .keep_all = TRUE) %>%
     nrow(.)
 ```
@@ -170,9 +164,10 @@ We performed bootstrap resampling to compare the similarity of the analysis samp
 
 \newpage
 
-**Figure 2**
+### Figure 2
+
 ```{r bootGraphMean, out.width = "70%"}
-tar_read(bootGraphMean)
+tar_read(boot_graph_mean)
 ```
 
 The bootstrap resampling indicates that the journals sampled from the TOP database fall in the 99% CI for journal means, albeit on the higher end of bootstrapped samples.

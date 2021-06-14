@@ -8,7 +8,7 @@ get_citeScore <- function() {
         stringr[str_pad]
     )
 
-    citeScoreDat <- read_csv("Data/CiteScore.csv",
+    cite_score_dat <- read_csv("Data/CiteScore.csv",
         col_types = cols(
             `Scopus Source ID` = col_skip(),
             `Scholarly Output` = col_skip(),
@@ -27,7 +27,7 @@ get_citeScore <- function() {
         )
     )
 
-    citeScoreDat <- citeScoreDat %>%
+    cite_score_dat <- cite_score_dat %>%
         pivot_longer(
             c(`Print ISSN`, `E-ISSN`),
             names_repair = "unique"
@@ -46,5 +46,5 @@ get_citeScore <- function() {
         ) %>%
             drop_na(ISSN)
 
-    return(citeScoreDat)
+    return(cite_score_dat)
 }

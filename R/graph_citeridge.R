@@ -1,5 +1,5 @@
 #' @export
-graph_citeridge <- function(df, citeScoreDat) {
+graph_citeridge <- function(df, cite_score_dat) {
     box::use(
         dplyr[...],
         ggridges[stat_density_ridges, theme_ridges],
@@ -10,18 +10,20 @@ graph_citeridge <- function(df, citeScoreDat) {
         ./burgled[theme_apa]
     )
 
+    # Set up data for graphing ------------------------------------------- #
+
     # Calculate the top 10 percent of journals from the cite score data
     # as the Top10Perc column is inaccurate
-    minScore <- citeScoreDat %>%
+    min_score <- cite_score_dat %>%
         slice_max(CiteScore, n = nrow(.) * 0.1) %>%
         pull(CiteScore) %>%
         range() %>%
         .[1]
 
     df <- df %>%
-        filter(CiteScore >= minScore)
+        filter(CiteScore >= min_score)
 
-    totalN <- df %>%
+    total_N <- df %>%
         ungroup() %>%
         distinct(Title, .keep_all = TRUE) %>%
         count() %>%
@@ -39,10 +41,12 @@ graph_citeridge <- function(df, citeScoreDat) {
 
     title <- sprintf(
         "Distribution of Cite Score with Open Science Implementation \n (n = %d)",
-        totalN
+        total_N
     )
 
-    citeGraph <- df %>%
+    # Graphing --------------------------------------------------------------- #
+
+    cite_graph <- df %>%
         ggplot(aes(
             y = fct_reorder(N, ScoreMax, .desc = TRUE),
             x = CiteScore,
@@ -73,5 +77,5 @@ graph_citeridge <- function(df, citeScoreDat) {
             plot.caption.position = "plot"
         )
 
-    citeGraph
+    cite_graph
 }

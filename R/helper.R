@@ -64,3 +64,32 @@ new_bar <- function(count) {
     )
     pb
 }
+
+#' @export
+proper_issn <- function(x) {
+    box::use(dplyr[...])
+
+          x %>%
+              gsub("[[:space:]]", "", .) %>%
+              gsub("^(.{4})(.*)$", "\\1-\\2", .) %>%
+              return()
+
+}
+
+#' @export
+check_fuzzed_match <- function(x, col1, col2) {
+    box::use(dplyr[...])
+
+    listA <- x[col1][!is.na(x[col1])] %>%
+        trimws("both")
+    listB <- x[col2][!is.na(x[col2])] %>%
+        trimws("both")
+
+    matches <- sapply(
+        listA,
+        function(y) {
+            sapply(listB, function(x) grepl(y, x, ignore.case = TRUE))
+        }
+    )
+    return(matches)
+}

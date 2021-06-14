@@ -9,7 +9,12 @@ aggregate_policies <- function(df) {
     )
 
     df$OSS <- df %>%
-        select(DataCitation:Badges, Submitted, Accepted, Published) %>%
+        select(
+            DataCitationScore:OpenScienceBadgesScore,
+            Submitted,
+            Accepted,
+            Published
+        ) %>%
         rowSums(na.rm = TRUE)
 
     df <- df %>%
@@ -34,10 +39,9 @@ aggregate_policies <- function(df) {
     df <- df %>%
         distinct(Title, .keep_all = TRUE) %>%
         select(
-            -DataCitation:-Badges,
+            -DataCitationScore:-OpenScienceBadgesScore,
             -Submitted:-Published,
             -MatchTitle,
-            -SubjectArea,
             -Publisher,
             -ISSN
         )

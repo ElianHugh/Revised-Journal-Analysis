@@ -1,5 +1,5 @@
 #' @export
-analyse_similarity <- function(aggregatePolicies, citeScore) {
+analyse_similarity <- function(aggregated_policies, cite_score_dat) {
     box::use(
         dplyr[...],
         parallel[detectCores],
@@ -11,28 +11,28 @@ analyse_similarity <- function(aggregatePolicies, citeScore) {
     )
 
     bootstrap <- function(x) {
-        out <- sample(x$CiteScore, size = nrow(analysisSample), replace = TRUE)
+        out <- sample(x$CiteScore, size = nrow(analysis_sample), replace = TRUE)
         tibble(
             Mean = mean(out),
             SD = sd(out)
         )
     }
 
-    minScore <- citeScore %>%
+    min_score <- cite_score_dat %>%
         slice_max(CiteScore, n = nrow(.) * 0.1) %>%
         pull(CiteScore) %>%
         range() %>%
         .[1]
 
-    randomSample <- citeScore %>%
+    random_sample <- cite_score_dat %>%
         ungroup() %>%
-        filter(CiteScore >= minScore) %>%
+        filter(CiteScore >= min_score) %>%
         distinct(across(c(Title, ISSN)), .keep_all = TRUE) %>%
         select(CiteScore)
 
-    analysisSample <- aggregatePolicies %>%
+    analysis_sample <- aggregated_policies %>%
         ungroup() %>%
-        filter(CiteScore >= minScore) %>%
+        filter(CiteScore >= min_score) %>%
         distinct(Title, .keep_all = TRUE) %>%
         select(CiteScore)
 
@@ -45,18 +45,18 @@ analyse_similarity <- function(aggregatePolicies, citeScore) {
     registerDoSNOW(cl)
     opts <- list(progress = (function(n) setTxtProgressBar(pb, n)))
 
-    boot.out <- foreach(
+    boot_out <- foreach(
         i = 1:iterations,
         .options.snow = opts,
         .errorhandling = "remove",
         .combine = "rbind",
         .packages = "tidyverse"
     ) %dopar% {
-        x <- bootstrap(randomSample)
+        x <- bootstrap(random_sample)
         return(x)
     }
 
     close(pb)
 
-    return(boot.out)
+    return(boot_out)
 }

@@ -35,17 +35,7 @@ combine_journals <- function(combined_cite, journal_policies) {
             MatchTitle,
             ISSN,
             Publisher,
-            DataTransparency,
-            AnalysisTransparency,
-            MaterialsTransparency,
-            DesignAnalysis,
-            Preregistration,
-            Replication,
-            AnalysisPreReg,
-            RegRepPubBias,
-            DataTransparency,
-            DataCitation,
-            Badges
+            DataTransparencyScore:OpenScienceBadgesScore
         )
 
     journal_policies <- journal_policies %>%
